@@ -14,15 +14,15 @@ function($stateProvider, $urlRouterProvider) {
     		}]
   		}
 		})
-    .state('posts', {
-  	  url: '/posts/{id}',
- 	  templateUrl: '/posts.html',
-  	  controller: 'PostsCtrl',
-  	  resolve: {
-  	  	post: ['$stateParams', 'posts', function($stateParams, posts){
-  	  		return posts.get($stateParams.id); 
-  	  	}]
-  	  }
+	.state('posts', {
+  		url: '/posts/{id}',
+  		templateUrl: '/posts.html',
+  		controller: 'PostsCtrl',
+  		resolve: {
+    		post: ['$stateParams', 'posts', function($stateParams, posts) {
+      		return posts.get($stateParams.id);
+    }]
+  }
 });
 
   $urlRouterProvider.otherwise('/home');
@@ -64,8 +64,15 @@ app.factory('posts', ['$http', function($http){
 	}
 
 	obj.addComment = function(id, comment) {
-		return $http.post('/posts/' + id + "/comments", comment);
+		return $http.post('/posts/' + id + '/comments', comment);
 	}
+
+	obj.upvoteComment = function(post, comment) {
+  return $http.put('/posts/' + post._id + '/comments/'+ comment._id + '/upvote')
+    .success(function(data){
+      comment.upvotes += 1;
+    });
+};
 	return obj;
 }])
 app.controller('MainCtrl', [
@@ -105,6 +112,11 @@ function($scope, posts, post){
     }).success(function(comment) {
       $scope.post.comments.push(comment);
     });
+
     $scope.body = '';
-  };
+  }
+
+  $scope.incrementUpvotes = function(comment) {
+  	posts.upvoteComment(post, comment); 
+  }
 }]);
